@@ -377,6 +377,11 @@ public class SwerveSubsystem extends SubsystemBase
                            .forEach(it -> it.setAngle(0.0)));
   }
 
+  // non command version of the command that centers the modules.
+  public void centerModulesNonCommand(){
+    Arrays.asList(swerveDrive.getModules()).forEach(it -> it.setAngle(0.0));
+  }
+
   /**
    * Returns a Command that drives the swerve drive to a specific distance at a given speed.
    *
