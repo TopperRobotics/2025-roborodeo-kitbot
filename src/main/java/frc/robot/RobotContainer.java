@@ -103,6 +103,7 @@ public class RobotContainer
     //NamedCommands.registerCommand("test", Commands.print("I EXIST"));
 
     // twin this should not be here 🥀
+    // centers modules on enable
     drivebase.centerModulesNonCommand();
   }
 
