@@ -12,13 +12,16 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.moveAndRotate;
 import frc.robot.subsystems.scorer;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
@@ -118,6 +121,9 @@ public class RobotContainer
   {
     // create scoring motor object
     scorer scoringMotor0 = new scorer();
+    // create new limelight alignment object
+    moveAndRotate moverAndRotator0 = new moveAndRotate(drivebase, drivebase::getPose);
+
     Command driveFieldOrientedDirectAngle      = drivebase.driveFieldOriented(driveDirectAngle);
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
     Command driveRobotOrientedAngularVelocity  = drivebase.driveFieldOriented(driveRobotOriented);
@@ -163,7 +169,7 @@ public class RobotContainer
 //                              );
 
     }
-    if (DriverStation.isTest())
+    /*if (DriverStation.isTest())
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
 
@@ -179,13 +185,20 @@ public class RobotContainer
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-    }
+    }*/
+    driverXbox.b().onTrue(drivebase.centerModulesCommand());
+    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+    driverXbox.y().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
 
-    driverXbox.rightBumper().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorForwards()));
-    driverXbox.rightBumper().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
+    scorerXbox.a().whileTrue(Commands.runOnce(() -> moverAndRotator0.execute()).andThen(Commands.runOnce(() -> scoringMotor0.runMotorForwards()).withTimeout(0.7)).andThen(Commands.runOnce(() -> scoringMotor0.stopMotor())));
+    scorerXbox.a().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
+
+    scorerXbox.rightBumper().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorForwards()));
+    scorerXbox.rightBumper().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
     
-    driverXbox.rightTrigger().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorBackwards()));
-    driverXbox.rightTrigger().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
+    scorerXbox.rightTrigger().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorBackwards()));
+    scorerXbox.rightTrigger().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
   }
 
   /**
@@ -193,11 +206,28 @@ public class RobotContainer
    *
    * @return the command to run in autonomous
    */
+  //TODO: finish this!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand("New Auto");
-  }
+    /*return new InstantCommand(()->{
+      if (DriverStation.getAlliance().get().equals(Alliance.Blue)){
+        drivebase.setGyro(180);
+      } 
+      else{ 
+        drivebase.zeroGyro();
+      }}).andThen(autoChooser.getSelected());//new PathPlannerAuto("MAuto"));
+  */}
 
   public void setMotorBrake(boolean brake)
   {
