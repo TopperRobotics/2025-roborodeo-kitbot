@@ -26,7 +26,6 @@ import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 // also remove elevator code because we don't need it right now
 public class moveAndRotate extends Command {
     private final SwerveSubsystem s_Swerve;
-    private final Supplier<Pose2d> poseProvider;
     private final PIDController moveXController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveYController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveTController = new PIDController(0.25, 0, 0);//(2.1, 0, 0);
@@ -39,10 +38,8 @@ public class moveAndRotate extends Command {
     private boolean isBlue;
     private long curr_tag_in_view;
     public moveAndRotate(
-        SwerveSubsystem s_Swerve,
-        Supplier<Pose2d> poseProvider) {
+        SwerveSubsystem s_Swerve) {
         this.s_Swerve= s_Swerve;
-        this.poseProvider = poseProvider;
         // this.amount_offset = amount_offset;
         // moveXController.setTolerance(0.05);
         // moveYController.setTolerance(0.05);
@@ -79,7 +76,7 @@ public class moveAndRotate extends Command {
             System.out.println("No apriltag");
         }
         else{
-            var roboPose = poseProvider.get();
+            var roboPose = s_Swerve.getPose();
             Pose2d tag_pose = new Pose2d();
             if (curr_tag_in_view > 0){
                 tag_pose = layout.getTagPose((int)(curr_tag_in_view)).get().toPose2d();
@@ -129,7 +126,7 @@ public class moveAndRotate extends Command {
     @Override
     public void execute() {
         System.out.println("Executed main loop: "+ isDone);
-        var robotPose2d = poseProvider.get();
+        var robotPose2d = s_Swerve.getPose();
         if (isDone){
             
             return;

@@ -42,6 +42,9 @@ public class RobotContainer
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
 
+  moveAndRotate MR_Tag = new moveAndRotate(drivebase);
+  scorer scoringMotor0 = new scorer();
+
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
@@ -119,11 +122,9 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    // create scoring motor object
-    scorer scoringMotor0 = new scorer();
-    // create new limelight alignment object
-    moveAndRotate moverAndRotator0 = new moveAndRotate(drivebase, drivebase::getPose);
-
+    drivebase.zeroGyro();
+    drivebase.setModulesToIMUYaw();
+    drivebase.printModuleAngles();
     Command driveFieldOrientedDirectAngle      = drivebase.driveFieldOriented(driveDirectAngle);
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
     Command driveRobotOrientedAngularVelocity  = drivebase.driveFieldOriented(driveRobotOriented);
@@ -191,8 +192,13 @@ public class RobotContainer
     driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
     driverXbox.y().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
 
-    scorerXbox.a().whileTrue(Commands.runOnce(() -> moverAndRotator0.execute()).andThen(Commands.runOnce(() -> scoringMotor0.runMotorForwards()).withTimeout(0.7)).andThen(Commands.runOnce(() -> scoringMotor0.stopMotor())));
-    scorerXbox.a().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
+    driverXbox.povUp().onTrue(drivebase.setModuleToAngle(0, 90));
+    driverXbox.povRight().onTrue(drivebase.setModuleToAngle(1, 90));
+    driverXbox.povDown().onTrue(drivebase.setModuleToAngle(2, 90));
+    driverXbox.povLeft().onTrue(drivebase.setModuleToAngle(3, 90));
+
+    scorerXbox.a().onTrue(MR_Tag.andThen(Commands.runOnce(() -> scoringMotor0.runMotorForwards()).withTimeout(0.7)).andThen(Commands.runOnce(() -> scoringMotor0.stopMotor())));
+    //scorerXbox.a().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
 
     scorerXbox.rightBumper().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorForwards()));
     scorerXbox.rightBumper().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));

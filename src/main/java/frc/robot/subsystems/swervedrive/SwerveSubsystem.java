@@ -48,6 +48,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.SwerveModule;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -380,6 +381,24 @@ public class SwerveSubsystem extends SubsystemBase
   // non command version of the command that centers the modules.
   public void centerModulesNonCommand(){
     Arrays.asList(swerveDrive.getModules()).forEach(it -> it.setAngle(0.0));
+  }
+
+  public Command setModuleToAngle(int module, double angle){
+    return run(() -> 
+      Arrays.asList(swerveDrive.getModules()).get(module).setAngle(angle)
+    );
+  }
+
+  public void printModuleAngles(){
+    System.out.println(Arrays.asList(swerveDrive.getModules()).get(0).getAbsoluteEncoder().getAbsolutePosition());
+    System.out.println(Arrays.asList(swerveDrive.getModules()).get(1).getAbsoluteEncoder().getAbsolutePosition());
+    System.out.println(Arrays.asList(swerveDrive.getModules()).get(2).getAbsoluteEncoder().getAbsolutePosition());
+    System.out.println(Arrays.asList(swerveDrive.getModules()).get(3).getAbsoluteEncoder().getAbsolutePosition());
+  }
+
+  public Command setModulesToIMUYaw(){
+    return run(() -> Arrays.asList(swerveDrive.getModules())
+                           .forEach(it -> it.setAngle(swerveDrive.getGyro().getRotation3d().getX())));
   }
 
   /**
