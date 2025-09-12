@@ -17,6 +17,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.pigeonHelpers;
 import frc.robot.subsystems.scorer;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANcoderConfigurator;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import edu.wpi.first.math.util.Units;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
