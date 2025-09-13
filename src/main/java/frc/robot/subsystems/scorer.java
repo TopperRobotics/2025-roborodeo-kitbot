@@ -12,11 +12,11 @@ public class scorer {
     public scorer(){}
     
     public void runMotorForwards(){
-        scoringMotor.set(1);
+        scoringMotor.set(0.9);
     }
 
     public void runMotorBackwards(){
-        scoringMotor.set(-1);
+        scoringMotor.set(-0.9);
     }
 
     public void stopMotor(){

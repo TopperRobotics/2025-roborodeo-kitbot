@@ -37,7 +37,6 @@ public class RobotContainer
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final         CommandXboxController driverXbox = new CommandXboxController(0);
-  final         CommandXboxController scorerXbox = new CommandXboxController(1);
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
@@ -96,7 +95,7 @@ public class RobotContainer
                                                                                .headingWhile(true)
                                                                                .translationHeadingOffset(true)
                                                                                .translationHeadingOffset(Rotation2d.fromDegrees(
-                                                                                   0));
+                                                                                   45));
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -123,7 +122,7 @@ public class RobotContainer
   private void configureBindings()
   {
     drivebase.zeroGyro();
-    drivebase.setModulesToIMUYaw();
+    //drivebase.setModulesToIMUYaw();
     drivebase.printModuleAngles();
     Command driveFieldOrientedDirectAngle      = drivebase.driveFieldOriented(driveDirectAngle);
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
@@ -187,24 +186,23 @@ public class RobotContainer
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
     }*/
-    driverXbox.b().onTrue(drivebase.centerModulesCommand());
+    driverXbox.b().whileTrue(drivebase.centerModulesCommand());
+    driverXbox.b().onFalse(Commands.none());
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-    driverXbox.y().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+    //driverXbox.y().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
 
-    driverXbox.povUp().onTrue(drivebase.setModuleToAngle(0, 90));
-    driverXbox.povRight().onTrue(drivebase.setModuleToAngle(1, 90));
-    driverXbox.povDown().onTrue(drivebase.setModuleToAngle(2, 90));
-    driverXbox.povLeft().onTrue(drivebase.setModuleToAngle(3, 90));
+    // driverXbox.povUp().onTrue(drivebase.setModuleToAngle(0, 90));
+    // driverXbox.povRight().onTrue(drivebase.setModuleToAngle(1, 90));
+    // driverXbox.povDown().onTrue(drivebase.setModuleToAngle(2, 90));
+    // driverXbox.povLeft().onTrue(drivebase.setModuleToAngle(3, 90));
 
-    scorerXbox.a().onTrue(MR_Tag.andThen(Commands.runOnce(() -> scoringMotor0.runMotorForwards()).withTimeout(0.7)).andThen(Commands.runOnce(() -> scoringMotor0.stopMotor())));
+    //driverXbox.y().onTrue(MR_Tag.andThen(Commands.runOnce(() -> scoringMotor0.runMotorForwards()).withTimeout(0.7)).andThen(Commands.runOnce(() -> scoringMotor0.stopMotor())));
+    //driverXbox.y().onFalse(Commands.runOnce(()->MR_Tag.end(true)));
     //scorerXbox.a().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
-
-    scorerXbox.rightBumper().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorForwards()));
-    scorerXbox.rightBumper().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
     
-    scorerXbox.rightTrigger().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorBackwards()));
-    scorerXbox.rightTrigger().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
+    driverXbox.rightTrigger().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorBackwards()));
+    driverXbox.rightTrigger().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
   }
 
   /**
@@ -222,10 +220,10 @@ public class RobotContainer
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  public Command getAutonomousCommand()
-  {
+  //public Command getAutonomousCommand()
+  //{
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
+  //  return drivebase.getAutonomousCommand("New Auto");
     /*return new InstantCommand(()->{
       if (DriverStation.getAlliance().get().equals(Alliance.Blue)){
         drivebase.setGyro(180);
@@ -233,7 +231,7 @@ public class RobotContainer
       else{ 
         drivebase.zeroGyro();
       }}).andThen(autoChooser.getSelected());//new PathPlannerAuto("MAuto"));
-  */}
+  *///}
 
   public void setMotorBrake(boolean brake)
   {
