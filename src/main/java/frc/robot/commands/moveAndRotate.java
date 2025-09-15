@@ -20,7 +20,6 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-// so sad ryan died 😩
 
 // migrate from custom swerve code to yagsl library
 // also remove elevator code because we don't need it right now
@@ -155,7 +154,6 @@ public class moveAndRotate extends Command {
     @Override
     public void end(boolean interrupted) {
         System.out.println("DONE");
-        // why is there no command to just stop the drivetrain? like what the hell? tspmo 🥀
         // old command that was from the old custom library s_Swerve.stop();
         s_Swerve.drive(new Translation2d(0, 0), 0, false);
     }
