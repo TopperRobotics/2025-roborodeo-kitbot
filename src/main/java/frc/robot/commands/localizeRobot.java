@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.Optional;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
@@ -24,17 +26,23 @@ import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
 public class localizeRobot {
     private final SwerveSubsystem s_Swerve;
-    private PoseEstimate estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    private Alliance alliance = DriverStation.getAlliance().get();
+    private PoseEstimate estimatedPose;
     private Pose2d pose = estimatedPose.pose;
     private double poseTimestamp = estimatedPose.timestampSeconds;
 
     public localizeRobot(SwerveSubsystem s_Swerve){
         this.s_Swerve = s_Swerve;
+        if(alliance.equals(Alliance.Blue)){
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+        } else if(alliance.equals(Alliance.Red)){
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
+        } else {
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+        }
     }
 
     public void updateOdomWithMT2(){
         s_Swerve.addVisionMeasurement(pose, poseTimestamp);
     }
-
-    //s_Swerve.addVisionMeasurement();
 }

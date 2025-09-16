@@ -28,6 +28,7 @@ import frc.robot.subsystems.scorer;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
+import java.util.Timer;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -44,10 +45,9 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
-
-  moveAndRotate MR_Tag = new moveAndRotate(drivebase);
   scorer scoringMotor0 = new scorer();
   localizeRobot robotLocalizer = new localizeRobot(drivebase);
+  moveAndRotate MR_Tag = new moveAndRotate(drivebase, robotLocalizer);
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -226,7 +226,7 @@ public class RobotContainer
     // driverXbox.povDown().onTrue(drivebase.setModuleToAngle(2, 90));
     // driverXbox.povLeft().onTrue(drivebase.setModuleToAngle(3, 90));
 
-    //driverXbox.y().onTrue(MR_Tag.andThen(Commands.runOnce(() -> scoringMotor0.runMotorForwards()).withTimeout(0.7)).andThen(Commands.runOnce(() -> scoringMotor0.stopMotor())));
+    driverXbox.y().onTrue(MR_Tag);
     //driverXbox.y().onFalse(Commands.runOnce(()->MR_Tag.end(true)));
     //scorerXbox.a().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
     

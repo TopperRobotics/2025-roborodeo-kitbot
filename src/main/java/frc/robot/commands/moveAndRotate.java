@@ -17,11 +17,13 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.commands.*;
 
 // migrate from custom swerve code to yagsl library
 // also remove elevator code because we don't need it right now
@@ -30,6 +32,7 @@ public class moveAndRotate extends Command {
     private final PIDController moveXController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveYController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveTController = new PIDController(0.25, 0, 0);//(2.1, 0, 0);
+    private final localizeRobot localizer;
 
     private final AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
     private boolean isDone;
@@ -38,9 +41,9 @@ public class moveAndRotate extends Command {
     private double thetaGoal;
     private boolean isBlue;
     private long curr_tag_in_view;
-    public moveAndRotate(
-        SwerveSubsystem s_Swerve) {
+    public moveAndRotate(SwerveSubsystem s_Swerve, localizeRobot s_Localize) {
         this.s_Swerve= s_Swerve;
+        this.localizer = s_Localize;
         // this.amount_offset = amount_offset;
         // moveXController.setTolerance(0.05);
         // moveYController.setTolerance(0.05);
@@ -67,6 +70,7 @@ public class moveAndRotate extends Command {
     
     @Override
     public void initialize() {
+        localizer.updateOdomWithMT2();
         isDone = false;
         //s_Swerve.togglePreciseTargeting(true);
         curr_tag_in_view = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tid").getInteger(-1);
@@ -89,6 +93,8 @@ public class moveAndRotate extends Command {
             }
             // check to see if detected tag is further than 2 feet away
             if(getDistanceToTagInFeet()>2){
+                isDone = true;
+                System.out.println("further than 2 feet from tag");
                 return;
             }
             double tag_x = tag_pose.getX();
@@ -142,6 +148,7 @@ public class moveAndRotate extends Command {
         double dely = y - robotPose2d.getY();
         double delt = optimizeAngle(Rotation2d.fromDegrees(robotPose2d.getRotation().getDegrees()), Rotation2d.fromDegrees(thetaGoal));
         System.out.println("ID: "+ curr_tag_in_view + " diff x: " + delx + " diff y: " + dely + "diff t: " + delt);
+        System.out.println("current location field relative: " + s_Swerve.getPose());
         // Output Volts is capped at 2 to prevent brownout
         double xOutput = Math.min(moveXController.calculate(isBlue? -1 * delx : delx), 3);
         double yOutput = Math.min(moveYController.calculate(isBlue? -1 * dely : dely), 3);
