@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.localizeRobot;
 import frc.robot.commands.moveAndRotate;
 import frc.robot.subsystems.scorer;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
@@ -46,6 +47,7 @@ public class RobotContainer
 
   moveAndRotate MR_Tag = new moveAndRotate(drivebase);
   scorer scoringMotor0 = new scorer();
+  localizeRobot robotLocalizer = new localizeRobot(drivebase);
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -125,6 +127,8 @@ public class RobotContainer
     // Configure the trigger bindings
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
+    // localize robot on enable
+    robotLocalizer.updateOdomWithMT2();
     //NamedCommands.registerCommand("test", Commands.print("I EXIST"));
 
     // twin this should not be here 🥀
@@ -142,6 +146,7 @@ public class RobotContainer
   private void configureBindings()
   {
     drivebase.zeroGyro();
+
     //drivebase.setModulesToIMUYaw();
     drivebase.printModuleAngles();
     Command driveFieldOrientedDirectAngle      = drivebase.driveFieldOriented(driveDirectAngle);

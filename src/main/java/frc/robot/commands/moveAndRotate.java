@@ -12,6 +12,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -56,8 +58,12 @@ public class moveAndRotate extends Command {
         }else{
           return targetAngle.minus(currentAngle).getDegrees();
         }
-        
-      }
+    }
+    
+    public double getDistanceToTagInFeet(){
+        Pose3d tag3dPose = LimelightHelpers.getTargetPose3d_CameraSpace("limelight");
+        return tag3dPose.getTranslation().getNorm() * 3.28084;
+    }
     
     @Override
     public void initialize() {
@@ -81,14 +87,16 @@ public class moveAndRotate extends Command {
                 tag_pose = layout.getTagPose((int)(curr_tag_in_view)).get().toPose2d();
 
             }
+            // check to see if detected tag is further than 2 feet away
+            if(getDistanceToTagInFeet()>2){
+                return;
+            }
             double tag_x = tag_pose.getX();
             double tag_y = tag_pose.getY();
             Rotation2d tag_theta = tag_pose.getRotation().minus(Rotation2d.fromDegrees(90));
             Rotation2d tag_theta_rot = tag_pose.getRotation().plus(Rotation2d.fromDegrees(180));
             double diff_t = roboPose.getRotation().minus(tag_theta_rot).getDegrees();
             System.out.println("t_dff" + diff_t + "robto angle: " + diff_t);
-
-        
             double forward_offset = -0.34;
             //String level = NetworkTableInstance.getDefault().getTable("ButtonBoard").getEntry("cumber").getString("");
             /*double o = 0; // o is lateral offset

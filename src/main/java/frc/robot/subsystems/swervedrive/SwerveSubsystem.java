@@ -43,6 +43,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.dyn4j.geometry.Rotation;
 import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
 import swervelib.SwerveController;
@@ -745,6 +747,10 @@ public class SwerveSubsystem extends SubsystemBase
   public void addFakeVisionReading()
   {
     swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
+  }
+
+  public void addVisionMeasurement(Pose2d pose, double time){
+    swerveDrive.addVisionMeasurement(pose, time);
   }
 
   /**
