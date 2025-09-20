@@ -28,21 +28,41 @@ public class localizeRobot {
     private final SwerveSubsystem s_Swerve;
     private Alliance alliance = DriverStation.getAlliance().get();
     private PoseEstimate estimatedPose;
-    private Pose2d pose = estimatedPose.pose;
-    private double poseTimestamp = estimatedPose.timestampSeconds;
+    private Pose2d pose;
+    private double poseTimestamp;
 
     public localizeRobot(SwerveSubsystem s_Swerve){
         this.s_Swerve = s_Swerve;
-        if(alliance.equals(Alliance.Blue)){
-            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-        } else if(alliance.equals(Alliance.Red)){
-            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
-        } else {
-            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-        }
     }
 
     public void updateOdomWithMT2(){
-        s_Swerve.addVisionMeasurement(pose, poseTimestamp);
+        //if(alliance.equals(Alliance.Blue)){
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+            pose = estimatedPose.pose;
+            poseTimestamp = estimatedPose.timestampSeconds;
+            if(pose != null){
+                s_Swerve.addVisionMeasurement(pose, poseTimestamp);
+                System.out.println("new pose: "+pose);
+                System.out.println("blue alliance");
+            } else {
+                System.out.println("no tag found to update odom");
+            }
+        /* } else if(alliance.equals(Alliance.Red)){
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
+            pose = estimatedPose.pose;
+            poseTimestamp = estimatedPose.timestampSeconds;
+            if(pose != null){
+                s_Swerve.addVisionMeasurement(pose, poseTimestamp);
+                System.out.println("new pose: "+pose);
+                System.out.println("red alliance");
+            } else {
+                System.out.println("no tag found to update odom with");
+            }
+        } else {
+            System.out.println("alliance not found");
+        }*/
+    }
+    public void initialPoseUpdate(){
+        s_Swerve.resetOdometry(LimelightHelpers.getBotPose2d("limelight"));
     }
 }

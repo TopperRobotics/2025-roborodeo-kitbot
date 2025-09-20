@@ -48,6 +48,7 @@ public class RobotContainer
   scorer scoringMotor0 = new scorer();
   localizeRobot robotLocalizer = new localizeRobot(drivebase);
   moveAndRotate MR_Tag = new moveAndRotate(drivebase, robotLocalizer);
+  //private final CoprocessorBridge m_bridge = new CoprocessorBridge();
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -128,7 +129,7 @@ public class RobotContainer
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
     // localize robot on enable
-    robotLocalizer.updateOdomWithMT2();
+    //robotLocalizer.updateOdomWithMT2();
     //NamedCommands.registerCommand("test", Commands.print("I EXIST"));
 
     // twin this should not be here 🥀
@@ -226,13 +227,16 @@ public class RobotContainer
     // driverXbox.povDown().onTrue(drivebase.setModuleToAngle(2, 90));
     // driverXbox.povLeft().onTrue(drivebase.setModuleToAngle(3, 90));
 
-    driverXbox.y().onTrue(MR_Tag);
-
-    driverXbox.y().onFalse(Commands.runOnce(()->MR_Tag.end(true)));
+    driverXbox.y().whileTrue(MR_Tag);
+    driverXbox.y().onFalse(Commands.none());
+    //driverXbox.y().onFalse(Commands.runOnce(()->MR_Tag.end(true)));
     //scorerXbox.a().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
     
     driverXbox.rightTrigger().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorBackwards()));
     driverXbox.rightTrigger().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
+
+    driverXbox.leftTrigger().onTrue(Commands.runOnce(() -> robotLocalizer.updateOdomWithMT2()));
+    driverXbox.leftTrigger().onFalse(Commands.none());
   }
 
   /**

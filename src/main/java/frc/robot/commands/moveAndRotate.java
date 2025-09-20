@@ -31,7 +31,7 @@ public class moveAndRotate extends Command {
     private final SwerveSubsystem s_Swerve;
     private final PIDController moveXController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveYController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
-    private final PIDController moveTController = new PIDController(0.25, 0, 0);//(2.1, 0, 0);
+    private final PIDController moveTController = new PIDController(5, 0, 0);//(2.1, 0, 0);
     private final localizeRobot localizer;
 
     private final AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
@@ -70,7 +70,6 @@ public class moveAndRotate extends Command {
     
     @Override
     public void initialize() {
-        localizer.updateOdomWithMT2();
         isDone = false;
         //s_Swerve.togglePreciseTargeting(true);
         curr_tag_in_view = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tid").getInteger(-1);
@@ -92,7 +91,7 @@ public class moveAndRotate extends Command {
 
             }
             // check to see if detected tag is further than 2 feet away
-            if(getDistanceToTagInFeet()>2){
+            if(getDistanceToTagInFeet()>4){
                 isDone = true;
                 System.out.println("further than 2 feet from tag");
                 return;
@@ -102,7 +101,7 @@ public class moveAndRotate extends Command {
             Rotation2d tag_theta = tag_pose.getRotation().minus(Rotation2d.fromDegrees(90));
             Rotation2d tag_theta_rot = tag_pose.getRotation().plus(Rotation2d.fromDegrees(180));
             double diff_t = roboPose.getRotation().minus(tag_theta_rot).getDegrees();
-            System.out.println("t_dff" + diff_t + "robto angle: " + diff_t);
+            System.out.println("t_dff" + diff_t + "robot angle: " + diff_t);
             double forward_offset = -0.34;
             //String level = NetworkTableInstance.getDefault().getTable("ButtonBoard").getEntry("cumber").getString("");
             /*double o = 0; // o is lateral offset
@@ -144,9 +143,9 @@ public class moveAndRotate extends Command {
             
             return;
         }
-        double delx = x - robotPose2d.getX();
-        double dely = y - robotPose2d.getY();
-        double delt = optimizeAngle(Rotation2d.fromDegrees(robotPose2d.getRotation().getDegrees()), Rotation2d.fromDegrees(thetaGoal));
+        double delx = (x - robotPose2d.getX());
+        double dely = (y - robotPose2d.getY());
+        double delt = (optimizeAngle(Rotation2d.fromDegrees(robotPose2d.getRotation().getDegrees()), Rotation2d.fromDegrees(thetaGoal)));
         System.out.println("ID: "+ curr_tag_in_view + " diff x: " + delx + " diff y: " + dely + "diff t: " + delt);
         System.out.println("current location field relative: " + s_Swerve.getPose());
         // Output Volts is capped at 2 to prevent brownout
@@ -170,7 +169,7 @@ public class moveAndRotate extends Command {
     public void end(boolean interrupted) {
         System.out.println("DONE");
         // old command that was from the old custom library s_Swerve.stop();
-        s_Swerve.drive(new Translation2d(0, 0), 0, false);
+        s_Swerve.drive(new Translation2d(0, 0), 0, true);
     }
     
 }
