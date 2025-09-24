@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
@@ -48,5 +50,30 @@ public final class Constants
     public static final double LEFT_Y_DEADBAND = 0.1;
     public static final double RIGHT_X_DEADBAND = 0.1;
     public static final double TURN_CONSTANT    = 6;
+  }
+
+  public static class VisionConstants {
+    //cirno
+    public static final Transform3d robotToFrontCameraTransform = new Transform3d(
+        Units.inchesToMeters(0), // x translation
+        Units.inchesToMeters(6), // y translation
+        Units.inchesToMeters(5), // z translation
+        new Rotation3d(
+          0, // no roll
+          0, // no pitch
+          0 // facing forward, no yaw
+        )
+    );
+    //reimu
+    public static final Transform3d robotToBackCameraTransform = new Transform3d(
+        Units.inchesToMeters(0), // x translation
+        Units.inchesToMeters(-6), // y translation
+        Units.inchesToMeters(5), // z translation
+        new Rotation3d(
+          0, // no roll
+          0, // no pitch
+          180 // facing backwards, invert yaw
+        )
+    );
   }
 }

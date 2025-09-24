@@ -22,13 +22,16 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.localizeRobot;
-import frc.robot.commands.moveAndRotate;
 import frc.robot.subsystems.scorer;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.vision.localizeRobot;
+import frc.robot.vision.moveAndRotate;
+
 import java.io.File;
 import swervelib.SwerveInputStream;
 import java.util.Timer;
+
+import org.photonvision.simulation.VisionSystemSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -48,6 +51,7 @@ public class RobotContainer
   scorer scoringMotor0 = new scorer();
   localizeRobot robotLocalizer = new localizeRobot(drivebase);
   moveAndRotate MR_Tag = new moveAndRotate(drivebase, robotLocalizer);
+  VisionSystemSim visionSim = new VisionSystemSim("main");
   //private final CoprocessorBridge m_bridge = new CoprocessorBridge();
 
   /**
@@ -235,7 +239,7 @@ public class RobotContainer
     driverXbox.rightTrigger().whileTrue(Commands.runOnce(() -> scoringMotor0.runMotorBackwards()));
     driverXbox.rightTrigger().onFalse(Commands.runOnce(() -> scoringMotor0.stopMotor()));
 
-    driverXbox.leftTrigger().onTrue(Commands.runOnce(() -> robotLocalizer.updateOdomWithMT2()));
+    driverXbox.leftTrigger().onTrue(Commands.runOnce(() -> robotLocalizer.updateOdomWithMultiCamera()));
     driverXbox.leftTrigger().onFalse(Commands.none());
   }
 
