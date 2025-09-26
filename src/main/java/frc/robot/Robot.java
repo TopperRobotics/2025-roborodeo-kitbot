@@ -60,8 +60,16 @@ public class Robot extends TimedRobot
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
-    // update the pose
+    // ensure everything is connected before continuing
+    // comment out m_bridge if ros is not going to be used
+    while(true){
+      if(m_robotContainer.robotLocalizer.getBackPhotonCamera().isConnected() && m_robotContainer.robotLocalizer.getFrontPhotonCamera().isConnected() && m_robotContainer.m_bridge.isCoprocessorReachable()){
+        break;
+      }
+    }
+    // update the pose and send it to the coprocessor
     m_robotContainer.robotLocalizer.initialPoseUpdate();
+    m_robotContainer.m_bridge.sendInitalPose(); // comment out if ros will not be used
 
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot stop
     // immediately when disabled, but then also let it be pushed more 
@@ -91,7 +99,7 @@ public class Robot extends TimedRobot
     // publish imu data to networktables, get data by calling method pigeonHelpers.getYawPitchRoll(). returns a double array, [Yaw, Pitch, Roll]
     //double[] ypr = pigeonHelpers.getYawPitchRoll();
     //SmartDashboard.putNumberArray("IMU (Yaw, Pitch, Roll)", ypr);
-    
+    m_robotContainer.m_bridge.sendDrivebaseOdometry();
 
     CommandScheduler.getInstance().run();
   }

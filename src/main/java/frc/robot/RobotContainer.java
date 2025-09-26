@@ -41,6 +41,8 @@ import org.photonvision.simulation.VisionSystemSim;
 public class RobotContainer
 {
 
+  // TODO: add system.gc() in robot.java and put it on a timer to garbage collect every few seconds to prevent running out of ram
+
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final         CommandXboxController driverXbox = new CommandXboxController(0);
 
@@ -52,7 +54,7 @@ public class RobotContainer
   localizeRobot robotLocalizer = new localizeRobot(drivebase);
   moveAndRotate MR_Tag = new moveAndRotate(drivebase, robotLocalizer);
   VisionSystemSim visionSim = new VisionSystemSim("main");
-  //private final CoprocessorBridge m_bridge = new CoprocessorBridge();
+  CoprocessorBridge m_bridge = new CoprocessorBridge(drivebase, robotLocalizer); // comment out if ros is not going to be used
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.

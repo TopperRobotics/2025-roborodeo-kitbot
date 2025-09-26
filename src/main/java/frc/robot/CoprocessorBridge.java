@@ -15,11 +15,12 @@ import frc.team88.ros.messages.RosMessage;
 import frc.team88.ros.messages.geometry_msgs.Pose2D;
 import frc.team88.ros.messages.std_msgs.RosFloat64;
 import org.photonvision.*;
+import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.vision.*;
 
 /**
- * CoprocessorBridge is an example class demonstrating how to use the
- * ROSNetworkTablesBridge to enable communication between a WPILib Java robot
- * project and a ROS environment.
+ * this is the bridge between the rio (which are shackled to rn) and ros on a coprocessor.
+ * very important
  */
 public class CoprocessorBridge extends SubsystemBase {
     private final ROSNetworkTablesBridge m_ros_interface;
@@ -45,17 +46,24 @@ public class CoprocessorBridge extends SubsystemBase {
     private final BridgePublisher<RosFloat64> m_odomPubApriltagOrientationXComponent;
     private final BridgePublisher<RosFloat64> m_odomPubApriltagOrientationYComponent;
     private final BridgePublisher<RosFloat64> m_odomPubApriltagOrientationZComponent;
+    // these come from the drivetrain odom, they are needed for the transformation graph for amcl
+    private final BridgePublisher<RosFloat64> m_odomPubRobotVelocityXComponent;
+    private final BridgePublisher<RosFloat64> m_odomPubRobotVelocityYComponent;
+    private final BridgePublisher<RosFloat64> m_odomPubRobotVelocityYaw;
 
-    private PhotonPoseEstimator initalPoseEstimator;
-    private PhotonCamera camera;
-    
-    // do not access directly
-    private Pose3d _INTERNALS_OUT_;
+    private final SwerveSubsystem s_Swerve;
+    private localizeRobot robotLocalizer;
+
+    // these are created along with the bridge object because creating too many new objects crashes the rio, so we reuse these.
+    // since they need to be sent multiple times per second, creating that many objects would use too much ram, which we need for other things
+    private RosFloat64 velocityX;
+    private RosFloat64 velocityY;
+    private RosFloat64 velocityYaw;
 
     /**
      * Constructor for the CoprocessorBridge class.
      */
-    public CoprocessorBridge(PhotonPoseEstimator estimator, PhotonCamera camera) {
+    public CoprocessorBridge(SwerveSubsystem drivetrain, localizeRobot localizer) {
         long updateDelay = 20;
         NetworkTableInstance instance = NetworkTableInstance.getDefault();
 
@@ -101,19 +109,21 @@ public class CoprocessorBridge extends SubsystemBase {
         m_odomPubApriltagOrientationYComponent = new BridgePublisher<>(m_ros_interface, "/inital_pose_orientation_y");
         m_odomPubApriltagOrientationZComponent = new BridgePublisher<>(m_ros_interface, "/inital_pose_orientation_z");
 
-        this.initalPoseEstimator = estimator;
-        this.camera = camera;
+        m_odomPubRobotVelocityXComponent = new BridgePublisher<>(m_ros_interface, "/robot_velocity_x");
+        m_odomPubRobotVelocityYComponent = new BridgePublisher<>(m_ros_interface, "/robot_velocity_y");
+        m_odomPubRobotVelocityYaw = new BridgePublisher<>(m_ros_interface, "/robot_velocity_yaw");
+
+        this.s_Swerve = drivetrain;
+        this.robotLocalizer = localizer;
     }
 
-    /**
-     * Checks if a new ping message has been received from the ROS environment,
-     * and if so, sends it back as a response. This measures the round trip response
-     * time.
-     */
-    public void checkPing() {
+    public boolean isCoprocessorReachable(){
         Optional<RosFloat64> ping;
         if ((ping = m_pingSendSub.receive()).isPresent()) {
             m_pingReturnPub.send(ping.get());
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -130,6 +140,7 @@ public class CoprocessorBridge extends SubsystemBase {
             // Convert quaternion to yaw angle (2D rotation)
             return 2.0 * Math.atan2(z.get().getData(), w.get().getData());
         }
+        System.out.println("z or w component was not available");
         return 0.0; // Default value if no data available
     }
 
@@ -145,6 +156,7 @@ public class CoprocessorBridge extends SubsystemBase {
         if (x.isPresent() && y.isPresent()) {
             return new Pose2d(x.get().getData(), y.get().getData(), new Rotation2d(getRotation2d()));
         }
+        System.out.println("x or y component was not available");
         return new Pose2d(); // Default pose if no data available
     }
 
@@ -171,14 +183,14 @@ public class CoprocessorBridge extends SubsystemBase {
         double robotOrientationY;
         double robotOrientationZ;
         Pose3d robotPose3d;
-        robotPose3d = getPose3dFromPhotonvision();
+        robotPose3d = robotLocalizer.getPose3dFromPhotonvision();
         robotPoseX = robotPose3d.getX();
         robotPoseY = robotPose3d.getY();
         robotPoseZ = robotPose3d.getZ();
         robotOrientationX = robotPose3d.getRotation().getX();
         robotOrientationY = robotPose3d.getRotation().getY();
         robotOrientationZ = robotPose3d.getRotation().getZ();
-
+        // this is fine, it will only be called once
         m_odomPubApriltagPositionXComponent.send(new RosFloat64(robotPoseX));
         m_odomPubApriltagPositionYComponent.send(new RosFloat64(robotPoseY));
         m_odomPubApriltagPositionZComponent.send(new RosFloat64(robotPoseZ));
@@ -187,20 +199,28 @@ public class CoprocessorBridge extends SubsystemBase {
         m_odomPubApriltagOrientationZComponent.send(new RosFloat64(robotOrientationZ));
     }
 
+    public double getRobotVelocityX(){
+        return s_Swerve.getRobotVelocity().vxMetersPerSecond;
+    }
+
+    public double getRobotVelocityY(){
+        return s_Swerve.getRobotVelocity().vyMetersPerSecond;
+    }
+
+    public double getRobotVelocityYaw(){
+        return s_Swerve.getRobotVelocity().omegaRadiansPerSecond;
+    }
+
     /**
-     * Gets Pose3d of the robot from Photonvision, used to initialize the robot's position
-     * @return Pose3d of the robot
+     * send the drivebase odometry to ros. must be run periodically.
+     * @return nothing
      */
-    public Pose3d getPose3dFromPhotonvision() {
-        Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera.getAllUnreadResults()) {
-            visionEst = initalPoseEstimator.update(change);
-            visionEst.ifPresent(
-                    est -> {
-                        //estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-                        _INTERNALS_OUT_ = new Pose3d(est.estimatedPose.getX(), est.estimatedPose.getY(), est.estimatedPose.getZ(), est.estimatedPose.getRotation());
-                    });
-        }
-        return _INTERNALS_OUT_;
+    public void sendDrivebaseOdometry(){
+        velocityX.setData(getRobotVelocityX());
+        velocityY.setData(getRobotVelocityY());
+        velocityYaw.setData(getRobotVelocityYaw());
+        m_odomPubRobotVelocityXComponent.send(velocityX);
+        m_odomPubRobotVelocityYComponent.send(velocityY);
+        m_odomPubRobotVelocityYaw.send(velocityYaw);
     }
 }

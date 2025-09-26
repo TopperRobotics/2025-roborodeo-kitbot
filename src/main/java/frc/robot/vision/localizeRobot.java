@@ -44,6 +44,9 @@ public class localizeRobot {
     private Transform3d robotToFrontCam;
     private Transform3d robotToBackCam;
 
+    // do not access directly
+    private Pose3d _INTERNALS_OUT_;
+
     public localizeRobot(SwerveSubsystem s_Swerve) {
         this.s_Swerve = s_Swerve;
         
@@ -243,5 +246,30 @@ public class localizeRobot {
         }
         
         return Optional.empty();
+    }
+
+    /**
+     * Gets Pose3d of the robot from Photonvision, used to initialize the robot's position
+     * @return Pose3d of the robot
+     */
+    public Pose3d getPose3dFromPhotonvision() {
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        for (var change : frontCamera.getAllUnreadResults()) {
+            visionEst = frontPoseEstimator.update(change);
+            visionEst.ifPresent(
+                    est -> {
+                        //estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+                        _INTERNALS_OUT_ = new Pose3d(est.estimatedPose.getX(), est.estimatedPose.getY(), est.estimatedPose.getZ(), est.estimatedPose.getRotation());
+                    });
+        }
+        return _INTERNALS_OUT_;
+    }
+
+    public PhotonCamera getFrontPhotonCamera(){
+        return frontCamera;
+    }
+
+    public PhotonCamera getBackPhotonCamera(){
+        return backCamera;
     }
 }
