@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.vision;
 
 import java.util.Optional;
 
@@ -24,35 +24,37 @@ import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
-public class localizeRobot {
+public class localizeRobotLimelight {
     private final SwerveSubsystem s_Swerve;
     private Alliance alliance = DriverStation.getAlliance().get();
     private PoseEstimate estimatedPose;
     private Pose2d pose;
     private double poseTimestamp;
 
-    public localizeRobot(SwerveSubsystem s_Swerve){
+    public localizeRobotLimelight(SwerveSubsystem s_Swerve){
         this.s_Swerve = s_Swerve;
     }
 
     public void updateOdomWithMT2(){
-        //if(alliance.equals(Alliance.Blue)){
+        if(alliance.equals(Alliance.Blue)){
             estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
             pose = estimatedPose.pose;
             poseTimestamp = estimatedPose.timestampSeconds;
             if(pose != null){
                 s_Swerve.addVisionMeasurement(pose, poseTimestamp);
+                System.out.println("apriltag id:" + estimatedPose.rawFiducials[0].id + " distance to cam: " + estimatedPose.rawFiducials[0].distToCamera);
                 System.out.println("new pose: "+pose);
                 System.out.println("blue alliance");
             } else {
                 System.out.println("no tag found to update odom");
             }
-        /* } else if(alliance.equals(Alliance.Red)){
+        } else if(alliance.equals(Alliance.Red)){
             estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
             pose = estimatedPose.pose;
             poseTimestamp = estimatedPose.timestampSeconds;
             if(pose != null){
                 s_Swerve.addVisionMeasurement(pose, poseTimestamp);
+                System.out.println("apriltag id:" + estimatedPose.rawFiducials[0].id + " distance to cam: " + estimatedPose.rawFiducials[0].distToCamera);
                 System.out.println("new pose: "+pose);
                 System.out.println("red alliance");
             } else {
@@ -60,9 +62,38 @@ public class localizeRobot {
             }
         } else {
             System.out.println("alliance not found");
-        }*/
+        }
     }
+    
     public void initialPoseUpdate(){
-        s_Swerve.resetOdometry(LimelightHelpers.getBotPose2d("limelight"));
+        if(alliance.equals(Alliance.Blue)){
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+            pose = estimatedPose.pose;
+            poseTimestamp = estimatedPose.timestampSeconds;
+            if(pose != null){
+                System.out.println("initial pose update, blue");
+                System.out.println("apriltag id:" + estimatedPose.rawFiducials[0].id + " distance to cam: " + estimatedPose.rawFiducials[0].distToCamera);
+                s_Swerve.resetOdometry(pose);
+                System.out.println("new pose: "+pose);
+                System.out.println("blue alliance");
+            } else {
+                System.out.println("no tag found to update odom, blue");
+            }
+        } else if(alliance.equals(Alliance.Red)){
+            estimatedPose = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
+            pose = estimatedPose.pose;
+            poseTimestamp = estimatedPose.timestampSeconds;
+            if(pose != null){
+                System.out.println("initial pose update, red");
+                System.out.println("apriltag id:" + estimatedPose.rawFiducials[0].id + " distance to cam: " + estimatedPose.rawFiducials[0].distToCamera);
+                s_Swerve.resetOdometry(pose);
+                System.out.println("new pose: "+pose);
+                System.out.println("red alliance");
+            } else {
+                System.out.println("no tag found to update odom with, red");
+            }
+        } else {
+            System.out.println("alliance not found");
+        }
     }
 }

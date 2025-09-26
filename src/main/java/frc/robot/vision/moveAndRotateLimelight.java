@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.vision;
 
 import java.util.function.Supplier;
 
@@ -27,12 +27,12 @@ import frc.robot.commands.*;
 
 // migrate from custom swerve code to yagsl library
 // also remove elevator code because we don't need it right now
-public class moveAndRotate extends Command {
+public class moveAndRotateLimelight extends Command {
     private final SwerveSubsystem s_Swerve;
     private final PIDController moveXController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveYController = new PIDController(2.1, 0, 0);//(2.1, 0, 0);
     private final PIDController moveTController = new PIDController(5, 0, 0);//(2.1, 0, 0);
-    private final localizeRobot localizer;
+    private final localizeRobotLimelight localizer;
 
     private final AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
     private boolean isDone;
@@ -41,7 +41,7 @@ public class moveAndRotate extends Command {
     private double thetaGoal;
     private boolean isBlue;
     private long curr_tag_in_view;
-    public moveAndRotate(SwerveSubsystem s_Swerve, localizeRobot s_Localize) {
+    public moveAndRotateLimelight(SwerveSubsystem s_Swerve, localizeRobotLimelight s_Localize) {
         this.s_Swerve= s_Swerve;
         this.localizer = s_Localize;
         // this.amount_offset = amount_offset;
